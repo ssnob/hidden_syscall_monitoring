@@ -77,7 +77,7 @@ bool search_for_syscall_stub(unsigned __int64 start, CONTEXT* context_record)
 	if (instructions[0] == 0x4C && instructions[1] == 0x8B && instructions[2] == 0xD1)
 	{		
 		__int32 syscall_index = -1;
-		__int32* address_of_syscall_index = 0;
+		__int32* address_of_syscall_index = nullptr;
 
 		// cods stub does a jmp + x, but this is here just incase 
 		if (instructions[3] == 0xB8) // mov eax, 0x0000000
@@ -157,13 +157,13 @@ bool search_for_syscall_stub(unsigned __int64 start, CONTEXT* context_record)
 					NULL))
 				{
 					// end of stack
-					if (stack_frame.AddrPC.Offset == 0) 
+					if (stack_frame.AddrPC.Offset == 0)
 						break;
 
 					frames.push_back(stack_frame);
 
 				};
-				
+
 				// print it out
 				for (auto& stack_frame : frames)
 				{
@@ -190,14 +190,19 @@ bool search_for_syscall_stub(unsigned __int64 start, CONTEXT* context_record)
 				}
 
 			}
-			else 
+			else
 			{
 				printf("Failed to find syscall %p (index: %x)\n", result, syscall_index);
-			} 
+			}
 
 			// example modification of syscall index
 			// in our case this will prevent NtTerminateProcess
-			*address_of_syscall_index = 0;
+			if (address_of_syscall_index)
+			{
+				*address_of_syscall_index = 0;
+			}
+
+			return true;
 		}
 	}
 	return false;
