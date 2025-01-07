@@ -1,8 +1,11 @@
-# hidden syscall monitoring
- monitors hidden syscalls called from call of duty anticheat via page guard hooking
+// entry.cpp : This file contains the 'main' function. Program execution begins and ends there.
 
-# example 
-```cpp
+#include <Windows.h>
+#include <stdio.h>
+
+#include "sys_monitor.h"
+#include "syscall_spoofer.h"
+
 int main(int argc, char** argv)
 {
 	sys_monitor::init();
@@ -19,7 +22,3 @@ int main(int argc, char** argv)
 	getchar();
 	return 0;
 }  
-```
-
-# output
-![image info](./pic.png)
