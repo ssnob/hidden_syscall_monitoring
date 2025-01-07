@@ -92,7 +92,7 @@ bool search_for_syscall_stub(unsigned __int64 start, CONTEXT* context_record)
 
 			// resolve where its jumping to
 			const auto jmp_start = reinterpret_cast<unsigned __int64>(&instructions[3]);
-			const auto resolved_address = jmp_start + 4; // 0xEB, 0x0, 0x0, 0x0, 0x0 4 bytes rva
+			const auto resolved_address = jmp_start + jmp_index + 2; // 0xEB, 0x0, 2 bytes rva
 
 			// read instructions
 			const auto resolved_instructions = reinterpret_cast<unsigned char*>(resolved_address);
