@@ -145,17 +145,22 @@
   <ItemGroup>
     <ClCompile Include="entry.cpp" />
     <ClCompile Include="NtAllocateVirtualMemory_Hook.cpp" />
+    <ClCompile Include="NtProtectVirtualMemory_Hook.cpp" />
     <ClCompile Include="page_guard_hook.cpp" />
     <ClCompile Include="sig_scan.cpp" />
     <ClCompile Include="sys_monitor.cpp" />
+    <ClCompile Include="text_section_code.cpp" />
     <ClCompile Include="util.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="hook_type.h" />
     <ClInclude Include="NtAllocateVirtualMemory_Hook.h" />
+    <ClInclude Include="NtProtectVirtualMemory_Hook.h" />
     <ClInclude Include="page_guard_hook.h" />
     <ClInclude Include="sig_scan.h" />
     <ClInclude Include="syscall_spoofer.h" />
     <ClInclude Include="sys_monitor.h" />
+    <ClInclude Include="text_section_code.h" />
     <ClInclude Include="util.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -15,6 +15,7 @@
 */
 
 #pragma once
+#include "hook_type.h"
 #include <Windows.h>
 #include <vector>
 #include <mutex>

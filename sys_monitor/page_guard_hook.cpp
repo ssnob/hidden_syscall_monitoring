@@ -54,6 +54,7 @@ void page_guard_hook::register_guard(unsigned __int64 address, unsigned __int32 
 {
 	std::lock_guard<std::mutex> lock(register_mutex);
 	guarded_pages.push_back({ address, region_size });
+
 	if (!guard_memory(address, region_size))
 	{
 		printf("failed to guard memory: %p\n", address);
@@ -213,6 +214,9 @@ std::unordered_map<unsigned __int64, guarded_page_t> guarded_page_restore;
 LONG WINAPI guard_UnhandledExceptionFilter(EXCEPTION_POINTERS* ex)
 {
 	const auto return_address = *reinterpret_cast<unsigned __int64*>(ex->ContextRecord->Rsp);
+	const auto exception_address = ex->ExceptionRecord->ExceptionAddress;
+
+#ifdef PAGE_GUARD_HOOK
 
 	if (ex->ExceptionRecord->ExceptionCode == STATUS_GUARD_PAGE_VIOLATION)
 	{
@@ -234,7 +238,7 @@ LONG WINAPI guard_UnhandledExceptionFilter(EXCEPTION_POINTERS* ex)
 
 		if (search_for_syscall_stub(reinterpret_cast<unsigned __int64>(ex->ExceptionRecord->ExceptionAddress), ex->ContextRecord))
 		{
-			printf("FOUND SYSCALL AT: %p\n", reinterpret_cast<unsigned __int64>(ex->ExceptionRecord->ExceptionAddress));
+			printf("[PAGE GUARD HOOK] FOUND SYSCALL AT: %p\n", reinterpret_cast<unsigned __int64>(ex->ExceptionRecord->ExceptionAddress));
 		}
 
 		// enable single step, windows removes PAGE_GUARD after the exception has been fired, so we need to restore it
@@ -246,7 +250,10 @@ LONG WINAPI guard_UnhandledExceptionFilter(EXCEPTION_POINTERS* ex)
 	{
 		if (guarded_page_restore.find(return_address) != guarded_page_restore.end())
 		{
-			search_for_syscall_stub(reinterpret_cast<unsigned __int64>(ex->ExceptionRecord->ExceptionAddress), ex->ContextRecord);
+			if (search_for_syscall_stub(reinterpret_cast<unsigned __int64>(ex->ExceptionRecord->ExceptionAddress), ex->ContextRecord))
+			{
+				printf("[PAGE GUARD HOOK] FOUND SYSCALL AT: %p\n", reinterpret_cast<unsigned __int64>(ex->ExceptionRecord->ExceptionAddress));
+			}
 
 			// guard the memory after we mess with it to prevent recursion
 			const auto page_to_restore = guarded_page_restore[return_address];
@@ -262,6 +269,44 @@ LONG WINAPI guard_UnhandledExceptionFilter(EXCEPTION_POINTERS* ex)
 
 		return EXCEPTION_CONTINUE_EXECUTION;
 	}
+#endif // PAGE_GUARD_HOOK
+
+#ifdef EXCEPTION_HOOK
+	if (ex->ExceptionRecord->ExceptionCode == STATUS_ACCESS_VIOLATION)
+	{
+		const auto access_type = ex->ExceptionRecord->ExceptionInformation[0];
+
+		if (access_type == 8) // execute attempt (dep violation)
+		{
+			MEMORY_BASIC_INFORMATION mbi;
+			if (!VirtualQuery(reinterpret_cast<void*>(exception_address), &mbi, sizeof(mbi)))
+			{
+				printf("Failed to query access violation!\n");
+				return EXCEPTION_CONTINUE_SEARCH;
+			}
+
+			if (mbi.Protect == PAGE_READWRITE)
+			{
+				// restore the execute permission
+				DWORD old;
+				if (!VirtualProtect(exception_address, mbi.RegionSize, PAGE_EXECUTE_READWRITE, reinterpret_cast<PDWORD>(1337)))
+				{
+					printf("Failed to restore protection\n");
+				}
+
+				if (search_for_syscall_stub(reinterpret_cast<unsigned __int64>(exception_address), ex->ContextRecord))
+				{
+					printf("[EXCEPTION HOOK] FOUND SYSCALL AT: %p\n", exception_address);
+				}
+			}
+
+			return EXCEPTION_CONTINUE_EXECUTION;
+		}
+
+		// we don't know about this access violation
+		return EXCEPTION_CONTINUE_SEARCH;
+	}
+#endif
 
 	return EXCEPTION_CONTINUE_SEARCH;
 }

@@ -15,6 +15,9 @@
 */
 
 #pragma once
+#include "hook_type.h"
+
+#ifdef PAGE_GUARD_HOOK
 #include <Windows.h>
 #include <stdio.h>
 #include <intrin.h>
@@ -39,3 +42,4 @@ namespace NtAllocateVirtualMemory_Hook
 	);
 };
 
+#endif

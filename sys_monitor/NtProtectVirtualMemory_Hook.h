@@ -16,15 +16,22 @@
 
 #pragma once
 #include "hook_type.h"
-#define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
-#include <DbgHelp.h>
-#pragma comment(lib, "dbghelp")
+#include <stdio.h>
+#include <intrin.h>
+#include <thread>
+#include <shared_mutex>
+#include <atomic>
+#include <mutex>
 
-namespace sys_monitor
+
+typedef LONG NTSTATUS;
+#ifdef EXCEPTION_HOOK
+namespace NtProtectVirtualMemory_Hook
 {
-	bool init();
-	bool install_exception_hook();
-	bool install_page_guard_hook();
-	bool hook_syscall(unsigned __int64* original_function, unsigned __int64 hook_function, const char* dll, const char* syscall);
-}
+	inline unsigned __int64 original_function;
+
+	NTSTATUS hook(HANDLE ProcessHandle, PVOID* BaseAddress, PSIZE_T RegionSize, ULONG NewProtection, PULONG OldProtection);
+};
+#endif
+
