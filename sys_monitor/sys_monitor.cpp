@@ -124,7 +124,7 @@ namespace sys_monitor
 		// write the hook stub
 		memcpy(const_cast<void*>(hook_stub_location), hook_stub, sizeof(hook_stub));
 
-		// overwrite NtAllocateVirtualMemory
+		// overwrite the function
 		DWORD old;
 		if (!VirtualProtect(reinterpret_cast<void*>(passed_in_syscall), 0x1000, PAGE_EXECUTE_READWRITE, &old))
 		{
