@@ -1,5 +1,5 @@
 # hidden syscall monitoring
- monitors hidden syscalls called from call of duty anticheat via page guard hooking
+ monitors hidden syscalls called from call of duty anticheat via exception hooking
 
 # poc
 the anticheat does not call NtAllocateVirtualMemory for these, they have a large spot in the .text section and they call NtProtectVirtualMemory with PAGE_EXECUTE_READWRITE on it.
