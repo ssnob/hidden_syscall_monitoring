@@ -26,3 +26,7 @@ int main(int argc, char** argv)
 
 # output
 ![image info](./pic.png)
+
+# game
+we can see their favorite functions here
+![image info](./game.png)
