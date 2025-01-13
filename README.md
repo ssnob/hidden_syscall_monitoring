@@ -28,5 +28,6 @@ int main(int argc, char** argv)
 ![image info](./pic.png)
 
 # game
-we can see their favorite functions here
 ![image info](./game.png)
+
+we can see their favorite functions
